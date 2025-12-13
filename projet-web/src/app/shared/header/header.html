@@ -1,0 +1,175 @@
+<header class="site-header">
+  <!-- Barre supérieure -->
+  <div class="top-bar">
+    <div class="container">
+      <div class="top-content">
+        <div class="top-left">
+          <span class="top-item">
+            <i class="material-icons">local_shipping</i>
+            Livraison en Tunisie dès 50 DT
+          </span>
+        </div>
+        <div class="top-right">
+          <span class="top-item">
+            <i class="material-icons">phone</i>
+            +216 98 123 456
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navigation principale -->
+  <nav class="main-nav">
+    <div class="container">
+      <!-- Logo -->
+      <a class="logo" routerLink="/">
+        <div class="logo-content">
+          <i class="material-icons">spa</i>
+          <span class="logo-text">Makeup<span class="logo-accent">Store</span></span>
+        </div>
+      </a>
+
+      <!-- Navigation -->
+      <div class="nav-menu">
+        <a class="nav-item" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+          Accueil
+        </a>
+        
+        <!-- Menu Catégories -->
+        <div class="dropdown" 
+             (mouseenter)="showCategories = true" 
+             (mouseleave)="showCategories = false">
+          
+          <a class="nav-item dropdown-toggle" (click)="toggleCategories()">
+            Catégories
+          </a>
+          
+          <!-- Menu déroulant -->
+          <div class="dropdown-menu" [class.show]="showCategories">
+            <a class="dropdown-item" routerLink="/products" (click)="hideCategories()">
+              <i class="material-icons">apps</i>
+              Toutes les catégories
+            </a>
+            
+            <a class="dropdown-item" routerLink="/products" 
+               [queryParams]="{category: 'face'}" 
+               (click)="hideCategories()">
+              <i class="material-icons">face</i>
+              Teint
+            </a>
+            
+            <a class="dropdown-item" routerLink="/products" 
+               [queryParams]="{category: 'eyes'}" 
+               (click)="hideCategories()">
+              <i class="material-icons">visibility</i>
+              Yeux
+            </a>
+            
+            <a class="dropdown-item" routerLink="/products" 
+               [queryParams]="{category: 'lips'}" 
+               (click)="hideCategories()">
+              <i class="material-icons">favorite</i>
+              Lèvres
+            </a>
+            
+            <a class="dropdown-item" routerLink="/products" 
+               [queryParams]="{category: 'brows'}" 
+               (click)="hideCategories()">
+              <i class="material-icons">brush</i>
+              Sourcils
+            </a>
+          </div>
+        </div>
+        
+        <a class="nav-item" routerLink="/products" routerLinkActive="active">
+          Produits
+        </a>
+        
+        <!-- Panier avec badge (visible uniquement pour utilisateurs connectés non-admins) -->
+        <a *ngIf="authService.isAuthenticated() && !authService.isAdmin()" class="nav-item" routerLink="/cart" routerLinkActive="active">
+          <span class="nav-cart-wrapper">
+            Panier
+            <span class="nav-cart-badge" *ngIf="cartCount > 0">
+              {{cartCount}}
+            </span>
+          </span>
+        </a>
+        
+        <!-- Section authentification -->
+        <div class="dropdown auth-dropdown"
+             (mouseenter)="showAccount = true" 
+             (mouseleave)="showAccount = false">
+          
+          <a class="nav-item dropdown-toggle" (click)="toggleAccount()">
+            <i class="material-icons account-icon">{{ isLoggedIn ? 'person' : 'login' }}</i>
+            {{ isLoggedIn ? 'Mon compte' : 'Connexion' }}
+          </a>
+          
+          <!-- Menu déroulant compte -->
+          <div class="dropdown-menu account-menu" [class.show]="showAccount">
+            <ng-container *ngIf="!isLoggedIn; else loggedInMenu">
+              <!-- Non connecté -->
+              <a class="dropdown-item" routerLink="/login" (click)="hideAccount()">
+                <i class="material-icons">login</i>
+                Se connecter
+              </a>
+              <a class="dropdown-item" routerLink="/register" (click)="hideAccount()">
+                <i class="material-icons">person_add</i>
+                Créer un compte
+              </a>
+            </ng-container>
+            
+            <ng-template #loggedInMenu>
+              <!-- Connecté -->
+              <div class="dropdown-header">
+                <i class="material-icons">person</i>
+                Mon compte
+              </div>
+              
+              <!-- Menu Admin simplifié -->
+              <ng-container *ngIf="authService.isAdmin(); else userMenu">
+                <a class="dropdown-item admin-link" routerLink="/admin/dashboard" (click)="hideAccount()">
+                  <i class="material-icons">dashboard</i>
+                  Dashboard Admin
+                </a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item logout-item" (click)="logout(); hideAccount()">
+                  <i class="material-icons">logout</i>
+                  Déconnexion
+                </a>
+              </ng-container>
+              
+              <!-- Menu Utilisateur complet -->
+              <ng-template #userMenu>
+                <a class="dropdown-item" routerLink="/profile" (click)="hideAccount()">
+                  <i class="material-icons">dashboard</i>
+                  Mon Compte
+                </a>
+                <a class="dropdown-item" routerLink="/profile" (click)="hideAccount()">
+                  <i class="material-icons">shopping_bag</i>
+                  Mes commandes
+                </a>
+                <a class="dropdown-item" routerLink="/profile" (click)="hideAccount()">
+                  <i class="material-icons">settings</i>
+                  Paramètres
+                </a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item logout-item" (click)="logout(); hideAccount()">
+                  <i class="material-icons">logout</i>
+                  Déconnexion
+                </a>
+              </ng-template>
+            </ng-template>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bouton panier mobile/icône (masqué pour les admins et non-connectés) -->
+      <a *ngIf="authService.isAuthenticated() && !authService.isAdmin()" class="cart-btn" routerLink="/cart">
+        <i class="material-icons">shopping_cart</i>
+        <span class="cart-count" *ngIf="cartCount > 0">{{cartCount}}</span>
+      </a>
+    </div>
+  </nav>
+</header>

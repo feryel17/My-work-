@@ -1,0 +1,86 @@
+<div class="register-container">
+  <div class="register-card">
+    <div class="register-header">
+      <h1>Créer un compte</h1>
+      <p>Rejoignez-nous pour profiter d'avantages exclusifs</p>
+    </div>
+
+    <form (ngSubmit)="onSubmit()" #registerForm="ngForm">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="firstName">Prénom *</label>
+          <input 
+            type="text" 
+            id="firstName" 
+            name="firstName"
+            [(ngModel)]="formData.firstName"
+            required
+            placeholder="Votre prénom"
+            [class.error]="errors.firstName">
+          <span class="error-message" *ngIf="errors.firstName">{{errors.firstName}}</span>
+        </div>
+
+        <div class="form-group">
+          <label for="lastName">Nom *</label>
+          <input 
+            type="text" 
+            id="lastName" 
+            name="lastName"
+            [(ngModel)]="formData.lastName"
+            required
+            placeholder="Votre nom"
+            [class.error]="errors.lastName">
+          <span class="error-message" *ngIf="errors.lastName">{{errors.lastName}}</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email *</label>
+        <input 
+          type="email" 
+          id="email" 
+          name="email"
+          [(ngModel)]="formData.email"
+          required
+          placeholder="votre@email.com"
+          [class.error]="errors.email">
+        <span class="error-message" *ngIf="errors.email">{{errors.email}}</span>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Mot de passe *</label>
+        <input 
+          type="password" 
+          id="password" 
+          name="password"
+          [(ngModel)]="formData.password"
+          required
+          placeholder="Au moins 6 caractères"
+          [class.error]="errors.password">
+        <span class="error-message" *ngIf="errors.password">{{errors.password}}</span>
+      </div>
+
+      <div class="form-group">
+        <label for="confirmPassword">Confirmer le mot de passe *</label>
+        <input 
+          type="password" 
+          id="confirmPassword" 
+          name="confirmPassword"
+          [(ngModel)]="formData.confirmPassword"
+          required
+          placeholder="Retapez votre mot de passe"
+          [class.error]="errors.confirmPassword">
+        <span class="error-message" *ngIf="errors.confirmPassword">{{errors.confirmPassword}}</span>
+      </div>
+
+      <button type="submit" class="submit-btn">
+        Créer mon compte
+      </button>
+
+      <div class="login-link">
+        Vous avez déjà un compte ? 
+        <a routerLink="/login">Se connecter</a>
+      </div>
+    </form>
+  </div>
+</div>

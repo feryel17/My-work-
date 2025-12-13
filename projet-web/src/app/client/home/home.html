@@ -1,0 +1,261 @@
+<!-- src/index.html -->
+<head>
+  <!-- ... autres balises ... -->
+  
+  <!-- AJOUTEZ CETTE LIGNE -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  
+</head>
+
+<!-- 1. CONTENEUR PRINCIPAL DE LA PAGE -->
+<div class="home-page">
+  
+  <!-- 2. SECTION HERO BANNER (Bannière principale) -->
+  <!-- CHANGEZ L'IMAGE DE FOND ICI ! -->
+  <section class="hero-banner" 
+           style="background-image: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.5)), url('assets/images/hero-banner.jpg');">
+    
+    <div class="container hero-content">
+      
+      <!-- Titre principal -->
+      <h1 class="hero-title">Découvrez votre beauté</h1>
+      
+      <!-- Sous-titre -->
+      <p class="hero-subtitle">Maquillage professionnel à portée de clic</p>
+      
+      <!-- Bouton d'action -->
+      <button class="hero-button" (click)="goToProducts()">
+        <span class="material-icons">shopping_bag</span>
+        Voir tous les produits
+      </button>
+      
+      <!-- Petite indication -->
+      <p class="hero-note">Livraison gratuite dès 50 DT d'achat</p>
+      
+    </div>
+  </section>
+
+  <!-- 3. SECTION CATÉGORIES -->
+  <section class="categories-section">
+    <div class="container">
+      
+      <!-- Titre de section -->
+      <h2 class="section-title">Nos Catégories</h2>
+      <p class="section-subtitle">Explorez par type de produit</p>
+      
+      <!-- Grille des catégories -->
+      <div class="categories-grid">
+        
+        <!-- BOUCLE : Crée une carte pour chaque catégorie -->
+        <div *ngFor="let category of categories" 
+             class="category-card"
+             (click)="goToCategory(category.id)">
+          
+          <!-- Image de la catégorie -->
+          <!-- CHANGEZ LES IMAGES ICI ! -->
+          <div class="category-image">
+            <img [src]="category.image" 
+                 [alt]="category.name"
+                 onerror="this.src='https://via.placeholder.com/400x300/E91E63/FFFFFF?text='+this.alt">
+          </div>
+          
+          <!-- Contenu de la carte -->
+          <div class="category-content">
+            
+            
+           
+            
+            <!-- Nom de la catégorie -->
+            <h3 class="category-name">{{ category.name }}</h3>
+            
+            <!-- Description -->
+            <p class="category-description">{{ category.description }}</p>
+            
+            <!-- Bouton -->
+            <button class="category-button" (click)="goToCategory(category.id)">
+              Explorer
+              <span class="material-icons">arrow_forward</span>
+            </button>
+            
+          </div>
+        </div>
+        
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. SECTION PRODUITS EN VEDETTE -->
+  <section class="featured-section">
+    <div class="container">
+      
+      <!-- Titre avec bouton voir tout -->
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">Produits Populaires</h2>
+          <p class="section-subtitle">Nos meilleures ventes</p>
+        </div>
+        <button class="see-all" (click)="goToProducts()">
+          Voir tout
+          <span class="material-icons">arrow_forward</span>
+        </button>
+      </div>
+      
+        <!-- MESSAGE DE CHARGEMENT -->
+        <div *ngIf="isLoading" class="loading-message">
+          <div class="simple-spinner" aria-hidden="true"></div>
+          <p>Chargement des produits...</p>
+        </div>
+      
+      <!-- MESSAGE D'ERREUR -->
+      <div *ngIf="errorMessage" class="error-message">
+        <span class="material-icons">error</span>
+        <p>{{ errorMessage }}</p>
+      </div>
+      
+      <!-- GRILLE DES PRODUITS -->
+      <div *ngIf="!isLoading && !errorMessage" class="products-grid">
+        
+        <!-- Si pas de produits -->
+        <div *ngIf="featuredProducts.length === 0" class="no-products">
+          <span class="material-icons">search_off</span>
+          <p>Aucun produit disponible pour le moment</p>
+        </div>
+        
+        <!-- BOUCLE : Affiche chaque produit -->
+        <!-- NOTE : Nous n'avons pas encore créé app-product-card -->
+        <!-- Pour l'instant, affichons directement -->
+        <div *ngFor="let product of featuredProducts | slice:0:4" 
+             class="product-item">
+          
+          <!-- Image du produit -->
+          <div class="product-image">
+              <img [src]="getProductImage(product)" 
+                [alt]="product.name"
+                (error)="onImageError($event)"
+                (click)="goToProduct(product.id)">
+            
+            <!-- Badge promo -->
+            <div *ngIf="product.oldPrice" class="discount-badge">
+              PROMO
+            </div>
+          </div>
+          
+          <!-- Infos produit -->
+          <div class="product-info">
+            
+            <!-- Marque -->
+            <span class="product-brand">{{ product.brand }}</span>
+            
+            <!-- Nom -->
+            <h3 class="product-name" (click)="goToProduct(product.id)">
+              {{ product.name }}
+            </h3>
+            
+            <!-- Prix -->
+            <div class="product-price">
+              <span class="current-price">{{ product.price | currency:'TND' }}</span>
+              <span *ngIf="product.oldPrice" class="old-price">
+                {{ product.oldPrice | currency:'TND' }}
+              </span>
+            </div>
+            
+            <!-- Étoiles (avis) -->
+            <div class="product-rating" *ngIf="product.rating">
+              <span *ngFor="let i of [1,2,3,4,5]" 
+                    class="material-icons" 
+                    [class.filled]="i <= product.rating">
+                {{ i <= product.rating ? 'star' : 'star_border' }}
+              </span>
+            </div>
+            
+            <!-- Bouton ajouter au panier -->
+            <button class="add-to-cart-btn" (click)="addToCart(product)">
+              <span class="material-icons">add_shopping_cart</span>
+              Ajouter
+            </button>
+            
+          </div>
+        </div>
+        
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. SECTION PROMOTIONS -->
+  <section class="promotions-section">
+    <div class="container">
+      
+      <h2 class="section-title">Promotions du moment</h2>
+      <p class="section-subtitle">Ne manquez pas nos offres spéciales</p>
+      
+      <div class="promotions-grid">
+        
+        <!-- BOUCLE : Affiche chaque promotion -->
+           <div *ngFor="let promo of promotions" 
+             class="promo-card"
+             (click)="goToPromo(promo)">
+          
+          <div class="promo-content">
+            <!-- Titre promotion -->
+            <h3 class="promo-title">{{ promo.title }}</h3>
+            
+            <!-- Description -->
+            <p class="promo-description">{{ promo.description }}</p>
+            
+            <!-- Bouton -->
+            <button class="promo-button" (click)="$event.stopPropagation(); goToPromo(promo)">
+              {{ promo.buttonText }}
+              <span class="material-icons">arrow_forward</span>
+            </button>
+          </div>
+          
+          <!-- Image décorative -->
+          <div class="promo-image">
+            <span class="material-icons">local_offer</span>
+          </div>
+          
+        </div>
+        
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. SECTION AVANTAGES -->
+  <section class="benefits-section">
+    <div class="container">
+      
+      <div class="benefits-grid">
+        
+        <!-- Avantage 1 -->
+        <div class="benefit">
+          <span class="material-icons benefit-icon">local_shipping</span>
+          <h3>Livraison offerte</h3>
+           <p>Dès 50 DT d'achat</p>
+        </div>
+        
+        <!-- Avantage 2 -->
+        <div class="benefit">
+          <span class="material-icons benefit-icon">assignment_return</span>
+          <h3>Retours gratuits</h3>
+          <p>30 jours pour changer d'avis</p>
+        </div>
+        
+        <!-- Avantage 3 -->
+        <div class="benefit">
+          <span class="material-icons benefit-icon">lock</span>
+          <h3>Paiement sécurisé</h3>
+          <p>Cryptage SSL</p>
+        </div>
+        
+        <!-- Avantage 4 -->
+        <div class="benefit">
+          <span class="material-icons benefit-icon">support_agent</span>
+          <h3>Service client</h3>
+          <p>7j/7 par chat</p>
+        </div>
+        
+      </div>
+    </div>
+  </section>
+
+</div>

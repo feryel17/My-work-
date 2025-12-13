@@ -1,0 +1,198 @@
+<div class="cart-page">
+  <!-- En-tête de page -->
+  <div class="page-header">
+    <div class="container">
+      <h1 class="page-title">Mon Panier</h1>
+      <p class="page-subtitle">Vérifiez vos articles et passez à la commande</p>
+    </div>
+  </div>
+
+  <div class="container main-content">
+    <!-- Panier vide -->
+    <div *ngIf="cartItems().length === 0" class="empty-cart">
+      <div class="empty-content">
+        <span class="material-icons empty-icon">shopping_cart</span>
+        <h2>Votre panier est vide</h2>
+        <p>Découvrez nos produits de maquillage de qualité</p>
+        <button class="btn btn-primary" [routerLink]="['/products']">
+          Continuer les achats
+        </button>
+      </div>
+    </div>
+
+    <!-- Panier avec articles -->
+    <div *ngIf="cartItems().length > 0" class="cart-content">
+      <div class="cart-items-section">
+        <h2 class="section-title">Articles du panier ({{ cartItems().length }})</h2>
+        
+        <div class="cart-table">
+          <!-- En-tête du tableau -->
+          <div class="table-header">
+            <div class="col-product">Produit</div>
+            <div class="col-price">Prix</div>
+            <div class="col-quantity">Quantité</div>
+            <div class="col-total">Total</div>
+            <div class="col-action"></div>
+          </div>
+
+          <!-- Lignes du tableau -->
+          <div class="table-body">
+            <div *ngFor="let item of cartItems()" class="table-row">
+              <!-- Produit -->
+              <div class="col-product">
+                <div class="product-info">
+                  <img 
+                    [src]="getProductImage(item.product)" 
+                    [alt]="item.product.name"
+                    class="product-image"
+                  >
+                  <div class="product-details">
+                    <h3>{{ item.product.name }}</h3>
+                    <p class="product-brand">{{ item.product.brand }}</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Prix -->
+              <div class="col-price">
+                <span class="price">{{ item.product.price | currency: 'TND' }}</span>
+              </div>
+
+              <!-- Quantité -->
+              <div class="col-quantity">
+                <div class="quantity-control">
+                  <button 
+                    class="qty-btn"
+                    (click)="decreaseQuantity(item.productId)"
+                    [disabled]="item.quantity <= 1"
+                  >
+                    <span class="material-icons">remove</span>
+                  </button>
+                  <input 
+                    type="number" 
+                    [(ngModel)]="item.quantity" 
+                    min="1"
+                    class="qty-input"
+                  >
+                  <button 
+                    class="qty-btn"
+                    (click)="increaseQuantity(item.productId)"
+                  >
+                    <span class="material-icons">add</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Total ligne -->
+              <div class="col-total">
+                <span class="line-total">
+                  {{ (item.product.price * item.quantity) | currency: 'TND' }}
+                </span>
+              </div>
+
+              <!-- Action (supprimer) -->
+              <div class="col-action">
+                <button 
+                  class="btn-delete"
+                  (click)="removeFromCart(item.productId)"
+                  title="Supprimer du panier"
+                >
+                  <span class="material-icons">delete_outline</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Résumé et paiement -->
+      <div class="cart-summary">
+        <div class="summary-card">
+          <h3>Résumé de la commande</h3>
+
+          <!-- Détail des prix -->
+          <div class="summary-rows">
+            <div class="summary-row">
+              <span class="label">Sous-total:</span>
+              <span class="value">{{ subtotal() | currency: 'TND' }}</span>
+            </div>
+            <div class="summary-row">
+              <span class="label">Livraison:</span>
+              <span class="value" [class.free]="shipping() === 0">
+                {{ shipping() === 0 ? 'Gratuite' : (shipping() | currency: 'TND') }}
+              </span>
+            </div>
+            <div *ngIf="promoApplied()" class="summary-row promo-row">
+              <span class="label">Réduction promo:</span>
+              <span class="value discount">-{{ promoDiscount() | currency: 'TND' }}</span>
+            </div>
+          </div>
+
+          <!-- Ligne de séparation -->
+          <div class="separator"></div>
+
+          <!-- Total -->
+          <div class="summary-row total-row">
+            <span class="label">Total:</span>
+            <span class="value total">{{ total() | currency: 'TND' }}</span>
+          </div>
+
+          <!-- Code promo -->
+          <div class="promo-section">
+            <div class="promo-input-group">
+              <input 
+                type="text" 
+                #promoInput
+                placeholder="Code promo"
+                class="promo-input"
+              >
+              <button 
+                class="btn btn-promo"
+                (click)="promoCode.set(promoInput.value); applyPromo()"
+              >
+                Appliquer
+              </button>
+            </div>
+            <p *ngIf="promoApplied()" class="promo-success">
+              ✓ Code promo appliqué avec succès!
+            </p>
+          </div>
+
+          <!-- Boutons d'action -->
+          <div class="action-buttons">
+            <button 
+              class="btn btn-primary btn-checkout"
+              [routerLink]="['/checkout']"
+            >
+              <span class="material-icons">payment</span>
+              Procéder au paiement
+            </button>
+            <button 
+              class="btn btn-secondary btn-continue"
+              [routerLink]="['/products']"
+            >
+              <span class="material-icons">shopping_bag</span>
+              Continuer les achats
+            </button>
+          </div>
+
+          <!-- Avantages -->
+          <div class="benefits">
+            <div class="benefit">
+              <span class="material-icons">local_shipping</span>
+              <span>Livraison gratuite à partir de 50 DT</span>
+            </div>
+            <div class="benefit">
+              <span class="material-icons">security</span>
+              <span>Paiement sécurisé</span>
+            </div>
+            <div class="benefit">
+              <span class="material-icons">assignment_return</span>
+              <span>Retours gratuits</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

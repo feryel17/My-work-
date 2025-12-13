@@ -1,0 +1,16 @@
+Ajoutez cette fonction APRÈS la fonction mapCategory (ligne 193) :
+
+  // Mapper les catégories françaises vers anglais
+  private mapCategoryFromFrench(category: string): string {
+    const cat = category?.toLowerCase() || '';
+    
+    if (cat === 'teint') return 'face';
+    if (cat === 'yeux') return 'eyes';
+    if (cat === 'levres' || cat === 'lèvres') return 'lips';
+    if (cat === 'sourcils') return 'brows';
+    
+    // Si déjà en anglais
+    if (['face', 'eyes', 'lips', 'brows'].includes(cat)) return cat;
+    
+    return 'face'; // Catégorie par défaut
+  }

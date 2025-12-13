@@ -1,0 +1,230 @@
+<div class="admin-orders">
+  <div class="container">
+    <!-- Navigation -->
+    <nav class="admin-nav">
+      <a routerLink="/" class="nav-link">🏠 Accueil</a>
+      <a routerLink="/admin/dashboard" class="nav-link">📊 Produits</a>
+      <a routerLink="/admin/orders" class="nav-link active">📦 Commandes</a>
+      <div class="nav-actions">
+        <span class="admin-name">👤 {{ authService.getUserData()?.firstName || 'Admin' }}</span>
+        <button class="btn-logout" (click)="logout()">🚪 Déconnexion</button>
+      </div>
+    </nav>
+
+    <!-- Filtres par statut -->
+    <div class="status-filters">
+      @for (status of statusOptions; track status.value) {
+        <button 
+          class="status-filter"
+          [class.active]="selectedStatus() === status.value"
+          (click)="selectStatus(status.value)"
+        >
+          <span class="filter-icon">{{ status.icon }}</span>
+          <span class="filter-label">{{ status.label }}</span>
+          <span class="filter-count">{{ getOrderCountByStatus(status.value) }}</span>
+        </button>
+      }
+    </div>
+
+    <!-- Liste des commandes -->
+    <div class="orders-section">
+      @if (isLoading()) {
+        <div class="loading">Chargement des commandes...</div>
+      } @else if (filteredOrders().length === 0) {
+        <div class="empty-state">
+          <p>Aucune commande trouvée</p>
+        </div>
+      } @else {
+        <div class="orders-grid">
+          @for (order of filteredOrders(); track order.id) {
+            <div class="order-card">
+              <div class="order-header">
+                <div class="order-info">
+                  <h3>Commande #{{ order.id?.substring(0, 8) }}</h3>
+                  <p class="order-date">
+                    {{ order.createdAt | date:'dd/MM/yyyy à HH:mm' }}
+                  </p>
+                </div>
+                <span class="order-status" [ngClass]="getStatusClass(order.status)">
+                  {{ getStatusIcon(order.status) }} {{ getStatusLabel(order.status) }}
+                </span>
+              </div>
+
+              <div class="order-body">
+                <div class="customer-info">
+                  <p><strong>Client:</strong> {{ order.userName }}</p>
+                  <p><strong>Email:</strong> {{ order.userEmail }}</p>
+                  <p><strong>Téléphone:</strong> {{ order.shippingAddress.phone }}</p>
+                </div>
+
+                <div class="order-items">
+                  <p><strong>Articles:</strong> {{ order.items.length }} produit(s)</p>
+                  <div class="items-preview">
+                    @for (item of order.items.slice(0, 2); track item.productId) {
+                      <div class="item-mini">
+                        <img [src]="item.productImage" [alt]="item.productName">
+                        <span>{{ item.quantity }}x {{ item.productName }}</span>
+                      </div>
+                    }
+                    @if (order.items.length > 2) {
+                      <span class="more-items">+{{ order.items.length - 2 }} autres</span>
+                    }
+                  </div>
+                </div>
+
+                <div class="order-total">
+                  <strong>Total: {{ order.totalAmount | number:'1.2-2' }} TND</strong>
+                </div>
+              </div>
+
+              <div class="order-actions">
+                <button class="btn-details" (click)="viewDetails(order)">
+                  👁️ Voir détails
+                </button>
+                @if (order.status === 'shipped') {
+                  <button 
+                    class="btn-deliver" 
+                    (click)="markAsDelivered(order.id!)"
+                  >
+                    ✅ Marquer livrée
+                  </button>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Modal détails commande -->
+  @if (selectedOrder()) {
+    <div class="modal-overlay" (click)="closeDetails()">
+      <div class="modal-content order-details" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>Détails de la commande</h3>
+          <button class="btn-close" (click)="closeDetails()">✕</button>
+        </div>
+
+        <div class="detail-section">
+          <h4>📋 Informations</h4>
+          <div class="detail-grid">
+            <div>
+              <strong>Numéro:</strong>
+              <p>#{{ selectedOrder()!.id?.substring(0, 12) }}</p>
+            </div>
+            <div>
+              <strong>Date:</strong>
+              <p>{{ selectedOrder()!.createdAt | date:'dd/MM/yyyy à HH:mm' }}</p>
+            </div>
+            <div>
+              <strong>Statut:</strong>
+              <p>
+                <span class="order-status" [ngClass]="getStatusClass(selectedOrder()!.status)">
+                  {{ getStatusIcon(selectedOrder()!.status) }} {{ getStatusLabel(selectedOrder()!.status) }}
+                </span>
+              </p>
+            </div>
+            <div>
+              <strong>Paiement:</strong>
+              <p>{{ selectedOrder()!.paymentMethod }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h4>👤 Client</h4>
+          <div class="detail-grid">
+            <div>
+              <strong>Nom:</strong>
+              <p>{{ selectedOrder()!.userName }}</p>
+            </div>
+            <div>
+              <strong>Email:</strong>
+              <p>{{ selectedOrder()!.userEmail }}</p>
+            </div>
+            <div>
+              <strong>Téléphone:</strong>
+              <p>{{ selectedOrder()!.shippingAddress.phone }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h4>🚚 Adresse de livraison</h4>
+          <p>{{ selectedOrder()!.shippingAddress.fullName }}</p>
+          <p>{{ selectedOrder()!.shippingAddress.address }}</p>
+          <p>{{ selectedOrder()!.shippingAddress.city }}, {{ selectedOrder()!.shippingAddress.postalCode }}</p>
+        </div>
+
+        <div class="detail-section">
+          <h4>🛒 Produits commandés</h4>
+          <div class="order-items-list">
+            @for (item of selectedOrder()!.items; track item.productId) {
+              <div class="order-item">
+                <img [src]="item.productImage" [alt]="item.productName">
+                <div class="item-info">
+                  <h5>{{ item.productName }}</h5>
+                  <p>Quantité: {{ item.quantity }}</p>
+                  <p>Prix unitaire: {{ item.price | number:'1.2-2' }} TND</p>
+                </div>
+                <div class="item-total">
+                  {{ (item.quantity * item.price) | number:'1.2-2' }} TND
+                </div>
+              </div>
+            }
+          </div>
+          
+          <div class="order-summary">
+            <div class="summary-row">
+              <span>Sous-total:</span>
+              <span>{{ selectedOrder()!.totalAmount | number:'1.2-2' }} TND</span>
+            </div>
+            <div class="summary-row">
+              <span>Livraison:</span>
+              <span>Gratuite</span>
+            </div>
+            <div class="summary-row total">
+              <strong>Total:</strong>
+              <strong>{{ selectedOrder()!.totalAmount | number:'1.2-2' }} TND</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h4>🔄 Changer le statut</h4>
+          <div class="status-buttons">
+            <button 
+              class="status-btn status-processing"
+              (click)="updateStatus(selectedOrder()!.id!, 'processing')"
+              [disabled]="selectedOrder()!.status === 'processing'"
+            >
+              🔄 En cours
+            </button>
+            <button 
+              class="status-btn status-shipped"
+              (click)="updateStatus(selectedOrder()!.id!, 'shipped')"
+              [disabled]="selectedOrder()!.status === 'shipped'"
+            >
+              🚚 Expédiée
+            </button>
+            <button 
+              class="status-btn status-delivered"
+              (click)="updateStatus(selectedOrder()!.id!, 'delivered')"
+              [disabled]="selectedOrder()!.status === 'delivered'"
+            >
+              ✅ Livrée
+            </button>
+            <button 
+              class="status-btn status-cancelled"
+              (click)="updateStatus(selectedOrder()!.id!, 'cancelled')"
+              [disabled]="selectedOrder()!.status === 'cancelled'"
+            >
+              ❌ Annulée
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

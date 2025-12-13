@@ -1,0 +1,351 @@
+<div class="admin-dashboard">
+  <div class="container">
+    <!-- Navigation -->
+    <nav class="admin-nav">
+      <a routerLink="/" class="nav-link">🏠 Accueil</a>
+      <a routerLink="/admin/dashboard" class="nav-link active">📊 Produits</a>
+      <a routerLink="/admin/orders" class="nav-link">📦 Commandes</a>
+      <div class="nav-actions">
+        <span class="admin-name">👤 {{ authService.getUserData()?.firstName || 'Admin' }}</span>
+        <button class="btn-logout" (click)="logout()">🚪 Déconnexion</button>
+      </div>
+    </nav>
+
+    <!-- Statistiques -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">📦</div>
+        <div class="stat-info">
+          <h3>{{ stats().totalProducts }}</h3>
+          <p>Produits</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🛒</div>
+        <div class="stat-info">
+          <h3>{{ stats().totalOrders }}</h3>
+          <p>Commandes</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">💰</div>
+        <div class="stat-info">
+          <h3>{{ stats().totalRevenue | number:'1.2-2' }} TND</h3>
+          <p>Revenu total</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">⏳</div>
+        <div class="stat-info">
+          <h3>{{ stats().pendingOrders }}</h3>
+          <p>En attente</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gestion des produits -->
+    <div class="products-section">
+      <div class="section-header">
+        <h2>Gestion des Produits</h2>
+        <button class="btn-primary" (click)="showAddProduct.set(true)">
+          ➕ Ajouter un produit
+        </button>
+      </div>
+
+      <!-- Formulaire ajout produit -->
+      @if (showAddProduct()) {
+        <div class="product-form">
+          <h3>Nouveau Produit</h3>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Nom du produit *</label>
+              <input 
+                type="text" 
+                [(ngModel)]="newProduct().name"
+                placeholder="Ex: Rouge à lèvres mat"
+                class="form-control"
+              >
+            </div>
+            
+            <div class="form-group">
+              <label>Marque *</label>
+              <input 
+                type="text" 
+                [(ngModel)]="newProduct().brand"
+                placeholder="Ex: Maybelline"
+                class="form-control"
+              >
+            </div>
+
+            <div class="form-group">
+              <label>Prix (TND) *</label>
+              <input 
+                type="number" 
+                [(ngModel)]="newProduct().price"
+                placeholder="0.00"
+                class="form-control"
+              >
+            </div>
+
+            <div class="form-group">
+              <label>Ancien prix (TND)</label>
+              <input 
+                type="number" 
+                [(ngModel)]="newProduct().oldPrice"
+                placeholder="0.00"
+                class="form-control"
+              >
+            </div>
+
+            <div class="form-group">
+              <label>Catégorie *</label>
+              <select [(ngModel)]="newProduct().category" class="form-control">
+                <option value="">-- Sélectionner une catégorie --</option>
+                <option value="face">Teint</option>
+                <option value="eyes">Yeux</option>
+                <option value="lips">Lèvres</option>
+                <option value="brows">Sourcils</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Stock *</label>
+              <input 
+                type="number" 
+                [(ngModel)]="newProduct().stock"
+                placeholder="0"
+                class="form-control"
+              >
+            </div>
+
+            <div class="form-group full-width">
+              <label>Image du produit *</label>
+              <input 
+                type="file" 
+                accept="image/*"
+                (change)="onImageSelect($event)"
+                class="form-control"
+              >
+              <small class="form-hint">
+                📌 Placez vos images dans le dossier: src/assets/images/products/
+                <br>
+                Ensuite entrez le nom du fichier ci-dessous (ex: rouge-levres.jpg)
+              </small>
+            </div>
+
+            <div class="form-group full-width">
+              <label>Nom du fichier image</label>
+              <input 
+                type="text" 
+                [(ngModel)]="imageFileName"
+                placeholder="nom-produit.jpg"
+                class="form-control"
+              >
+              <small class="form-hint">Le chemin complet sera: assets/images/products/votre-fichier.jpg</small>
+            </div>
+
+            <div class="form-group full-width">
+              <label>Description</label>
+              <textarea 
+                [(ngModel)]="newProduct().description"
+                rows="3"
+                placeholder="Description du produit..."
+                class="form-control"
+              ></textarea>
+            </div>
+
+            <div class="form-group">
+              <label class="checkbox-label">
+                <input 
+                  type="checkbox" 
+                  [(ngModel)]="newProduct().featured"
+                >
+                <span>Produit en vedette</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button class="btn-secondary" (click)="showAddProduct.set(false)">
+              Annuler
+            </button>
+            <button 
+              class="btn-primary" 
+              (click)="addProduct()"
+              [disabled]="isLoading()"
+            >
+              {{ isLoading() ? 'Ajout...' : 'Ajouter le produit' }}
+            </button>
+          </div>
+        </div>
+      }
+
+      <!-- Liste des produits -->
+      @if (isLoading()) {
+        <div class="loading">Chargement...</div>
+      } @else if (products().length === 0) {
+        <div class="empty-state">
+          <p>Aucun produit trouvé</p>
+        </div>
+      } @else {
+        <div class="products-table">
+          <table>
+            <thead>
+              <tr>
+                <th>Nom</th>
+                <th>Marque</th>
+                <th>Prix</th>
+                <th>Stock</th>
+                <th>Catégorie</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (product of products(); track product.id) {
+                <tr>
+                  <td>
+                    <strong>{{ product.name }}</strong>
+                    @if (product.featured) {
+                      <span class="badge-featured">⭐ Vedette</span>
+                    }
+                  </td>
+                  <td>{{ product.brand || 'Non spécifié' }}</td>
+                  <td>
+                    <span class="price">{{ product.price }} TND</span>
+                    @if (product.oldPrice) {
+                      <span class="old-price">{{ product.oldPrice }} TND</span>
+                    }
+                  </td>
+                  <td>
+                    <span [class.low-stock]="product.stock < 10">
+                      {{ product.stock }}
+                    </span>
+                  </td>
+                  <td>{{ product.category }}</td>
+                  <td>
+                    <div class="action-buttons">
+                      <button 
+                        class="btn-icon btn-edit" 
+                        (click)="startEdit(product)"
+                        title="Modifier"
+                      >
+                        ✏️
+                      </button>
+                      <button 
+                        class="btn-icon btn-delete" 
+                        (click)="deleteProduct(product.id!)"
+                        title="Supprimer"
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Modal édition -->
+  @if (editingProduct()) {
+    <div class="modal-overlay" (click)="cancelEdit()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>Modifier le produit</h3>
+          <button class="btn-close" (click)="cancelEdit()">✕</button>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Nom du produit</label>
+            <input 
+              type="text" 
+              [(ngModel)]="editingProduct()!.name"
+              class="form-control"
+            >
+          </div>
+          
+          <div class="form-group">
+            <label>Marque</label>
+            <input 
+              type="text" 
+              [(ngModel)]="editingProduct()!.brand"
+              class="form-control"
+            >
+          </div>
+
+          <div class="form-group">
+            <label>Prix (TND)</label>
+            <input 
+              type="number" 
+              [(ngModel)]="editingProduct()!.price"
+              class="form-control"
+            >
+          </div>
+
+          <div class="form-group">
+            <label>Stock</label>
+            <input 
+              type="number" 
+              [(ngModel)]="editingProduct()!.stock"
+              class="form-control"
+            >
+          </div>
+
+          <div class="form-group full-width">
+            <label>Image du produit</label>
+            <input 
+              type="file" 
+              accept="image/*"
+              (change)="onEditImageSelect($event)"
+              class="form-control"
+            >
+            <small class="form-hint">
+              📌 Placez vos images dans: src/assets/images/products/
+              <br>
+              Puis entrez le nom du fichier ci-dessous
+            </small>
+          </div>
+
+          <div class="form-group full-width">
+            <label>Nom du fichier image</label>
+            <input 
+              type="text" 
+              [(ngModel)]="editImageFileName"
+              placeholder="nom-produit.jpg"
+              class="form-control"
+            >
+            <small class="form-hint">
+              Image actuelle: {{ editingProduct()!.images?.[0] || 'Aucune' }}
+            </small>
+          </div>
+
+          <div class="form-group full-width">
+            <label>Description</label>
+            <textarea 
+              [(ngModel)]="editingProduct()!.description"
+              rows="3"
+              class="form-control"
+            ></textarea>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn-secondary" (click)="cancelEdit()">
+            Annuler
+          </button>
+          <button 
+            class="btn-primary" 
+            (click)="updateProduct()"
+            [disabled]="isLoading()"
+          >
+            {{ isLoading() ? 'Enregistrement...' : 'Enregistrer' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

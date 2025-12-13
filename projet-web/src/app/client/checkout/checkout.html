@@ -1,0 +1,382 @@
+<div class="checkout-page">
+  <!-- En-tête de page -->
+  <div class="page-header">
+    <div class="container">
+      <h1 class="page-title">Finaliser ma commande</h1>
+      <div class="checkout-steps">
+        <div class="step active">
+          <span class="step-number">1</span>
+          <span class="step-label">Informations</span>
+        </div>
+        <div class="step-divider"></div>
+        <div class="step active">
+          <span class="step-number">2</span>
+          <span class="step-label">Livraison</span>
+        </div>
+        <div class="step-divider"></div>
+        <div class="step active">
+          <span class="step-number">3</span>
+          <span class="step-label">Paiement</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container main-content">
+    <form [formGroup]="checkoutForm" (ngSubmit)="processOrder()" class="checkout-content">
+      <!-- Colonne principale : Formulaires -->
+      <div class="checkout-main">
+        
+        <!-- 1. Informations personnelles -->
+        <div class="checkout-section">
+          <div class="section-header">
+            <span class="material-icons">person</span>
+            <h2>Informations personnelles</h2>
+          </div>
+          
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="firstName">Prénom *</label>
+              <input 
+                type="text" 
+                id="firstName"
+                formControlName="firstName"
+                [class.error]="isFieldInvalid('firstName')"
+                placeholder="Votre prénom"
+              >
+              <span class="error-message" *ngIf="isFieldInvalid('firstName')">
+                {{ getFieldError('firstName') }}
+              </span>
+            </div>
+
+            <div class="form-group">
+              <label for="lastName">Nom *</label>
+              <input 
+                type="text" 
+                id="lastName"
+                formControlName="lastName"
+                [class.error]="isFieldInvalid('lastName')"
+                placeholder="Votre nom"
+              >
+              <span class="error-message" *ngIf="isFieldInvalid('lastName')">
+                {{ getFieldError('lastName') }}
+              </span>
+            </div>
+
+            <div class="form-group">
+              <label for="email">Email *</label>
+              <input 
+                type="email" 
+                id="email"
+                formControlName="email"
+                [class.error]="isFieldInvalid('email')"
+                placeholder="votre@email.com"
+              >
+              <span class="error-message" *ngIf="isFieldInvalid('email')">
+                {{ getFieldError('email') }}
+              </span>
+            </div>
+
+            <div class="form-group">
+              <label for="phone">Téléphone *</label>
+              <input 
+                type="tel" 
+                id="phone"
+                formControlName="phone"
+                [class.error]="isFieldInvalid('phone')"
+                placeholder="20123456"
+              >
+              <span class="error-message" *ngIf="isFieldInvalid('phone')">
+                {{ getFieldError('phone') }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Adresse de livraison -->
+        <div class="checkout-section">
+          <div class="section-header">
+            <span class="material-icons">local_shipping</span>
+            <h2>Adresse de livraison</h2>
+          </div>
+          
+          <div class="form-grid">
+            <div class="form-group full-width">
+              <label for="address">Adresse *</label>
+              <input 
+                type="text" 
+                id="address"
+                formControlName="address"
+                [class.error]="isFieldInvalid('address')"
+                placeholder="Numéro et nom de rue"
+              >
+              <span class="error-message" *ngIf="isFieldInvalid('address')">
+                {{ getFieldError('address') }}
+              </span>
+            </div>
+
+            <div class="form-group">
+              <label for="city">Ville *</label>
+              <input 
+                type="text" 
+                id="city"
+                formControlName="city"
+                [class.error]="isFieldInvalid('city')"
+                placeholder="Ariana, Nasr, Marsa..."
+              >
+              <span class="error-message" *ngIf="isFieldInvalid('city')">
+                {{ getFieldError('city') }}
+              </span>
+            </div>
+
+            <div class="form-group">
+              <label for="postalCode">Code postal *</label>
+              <input 
+                type="text" 
+                id="postalCode"
+                formControlName="postalCode"
+                [class.error]="isFieldInvalid('postalCode')"
+                placeholder="2045"
+              >
+              <span class="error-message" *ngIf="isFieldInvalid('postalCode')">
+                {{ getFieldError('postalCode') }}
+              </span>
+            </div>
+
+            <div class="form-group full-width">
+              <label for="country">Gouvernorat *</label>
+              <select id="country" formControlName="country">
+                <option value="Tunis">Tunis</option>
+                <option value="Ariana">Ariana</option>
+                <option value="Ben Arous">Ben Arous</option>
+                <option value="Manouba">Manouba</option>
+                <option value="Nabeul">Nabeul</option>
+                <option value="Bizerte">Bizerte</option>
+                <option value="Sousse">Sousse</option>
+                <option value="Sfax">Sfax</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Mode de paiement -->
+        <div class="checkout-section">
+          <div class="section-header">
+            <span class="material-icons">payment</span>
+            <h2>Mode de paiement</h2>
+          </div>
+          
+          <div class="payment-methods">
+            <div class="payment-option" 
+                 [class.active]="paymentMethod() === 'card'"
+                 (click)="selectPaymentMethod('card')">
+              <input 
+                type="radio" 
+                name="payment" 
+                value="card"
+                [checked]="paymentMethod() === 'card'"
+              >
+              <div class="payment-info">
+                <span class="material-icons">credit_card</span>
+                <div>
+                  <strong>Carte bancaire</strong>
+                  <p>Paiement sécurisé par carte</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="payment-option" 
+                 [class.active]="paymentMethod() === 'paypal'"
+                 (click)="selectPaymentMethod('paypal')">
+              <input 
+                type="radio" 
+                name="payment" 
+                value="paypal"
+                [checked]="paymentMethod() === 'paypal'"
+              >
+              <div class="payment-info">
+                <span class="material-icons">account_balance_wallet</span>
+                <div>
+                  <strong>PayPal</strong>
+                  <p>Paiement rapide et sécurisé</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="payment-option" 
+                 [class.active]="paymentMethod() === 'transfer'"
+                 (click)="selectPaymentMethod('transfer')">
+              <input 
+                type="radio" 
+                name="payment" 
+                value="transfer"
+                [checked]="paymentMethod() === 'transfer'"
+              >
+              <div class="payment-info">
+                <span class="material-icons">account_balance</span>
+                <div>
+                  <strong>Virement bancaire</strong>
+                  <p>Paiement par virement</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Champs carte bancaire -->
+          <div class="card-fields" *ngIf="paymentMethod() === 'card'">
+            <div class="form-grid">
+              <div class="form-group full-width">
+                <label for="cardNumber">Numéro de carte *</label>
+                <input 
+                  type="text" 
+                  id="cardNumber"
+                  formControlName="cardNumber"
+                  [class.error]="isFieldInvalid('cardNumber')"
+                  placeholder="1234 5678 9012 3456"
+                  maxlength="16"
+                >
+                <span class="error-message" *ngIf="isFieldInvalid('cardNumber')">
+                  {{ getFieldError('cardNumber') }}
+                </span>
+              </div>
+
+              <div class="form-group full-width">
+                <label for="cardName">Nom sur la carte *</label>
+                <input 
+                  type="text" 
+                  id="cardName"
+                  formControlName="cardName"
+                  [class.error]="isFieldInvalid('cardName')"
+                  placeholder="JEAN DUPONT"
+                >
+                <span class="error-message" *ngIf="isFieldInvalid('cardName')">
+                  {{ getFieldError('cardName') }}
+                </span>
+              </div>
+
+              <div class="form-group">
+                <label for="cardExpiry">Date d'expiration *</label>
+                <input 
+                  type="text" 
+                  id="cardExpiry"
+                  formControlName="cardExpiry"
+                  [class.error]="isFieldInvalid('cardExpiry')"
+                  placeholder="MM/AA"
+                  maxlength="5"
+                >
+                <span class="error-message" *ngIf="isFieldInvalid('cardExpiry')">
+                  {{ getFieldError('cardExpiry') }}
+                </span>
+              </div>
+
+              <div class="form-group">
+                <label for="cardCVV">CVV *</label>
+                <input 
+                  type="text" 
+                  id="cardCVV"
+                  formControlName="cardCVV"
+                  [class.error]="isFieldInvalid('cardCVV')"
+                  placeholder="123"
+                  maxlength="3"
+                >
+                <span class="error-message" *ngIf="isFieldInvalid('cardCVV')">
+                  {{ getFieldError('cardCVV') }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Notes additionnelles -->
+        <div class="checkout-section">
+          <div class="section-header">
+            <span class="material-icons">note</span>
+            <h2>Notes (optionnel)</h2>
+          </div>
+          
+          <div class="form-group">
+            <textarea 
+              formControlName="notes"
+              placeholder="Instructions de livraison, commentaires..."
+              rows="4"
+            ></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Colonne latérale : Résumé de commande -->
+      <div class="checkout-sidebar">
+        <div class="order-summary">
+          <h3>Résumé de la commande</h3>
+          
+          <!-- Articles -->
+          <div class="summary-items">
+            <div *ngFor="let item of cartItems()" class="summary-item">
+              <img [src]="getProductImage(item.product)" [alt]="item.product.name">
+              <div class="item-details">
+                <p class="item-name">{{ item.product.name }}</p>
+                <p class="item-qty">Qté: {{ item.quantity }}</p>
+              </div>
+              <p class="item-price">{{ item.product.price * item.quantity | currency: 'TND' }}</p>
+            </div>
+          </div>
+
+          <div class="summary-divider"></div>
+
+          <!-- Totaux -->
+          <div class="summary-totals">
+            <div class="summary-row">
+              <span>Sous-total:</span>
+              <span>{{ getSubtotal() | currency: 'TND' }}</span>
+            </div>
+            <div class="summary-row">
+              <span>Livraison:</span>
+              <span [class.free]="getShipping() === 0">
+                {{ getShipping() === 0 ? 'Gratuite' : (getShipping() | currency: 'TND') }}
+              </span>
+            </div>
+            <div class="summary-row total">
+              <span>Total:</span>
+              <span>{{ getTotal() | currency: 'TND' }}</span>
+            </div>
+          </div>
+
+          <!-- Conditions générales -->
+          <div class="terms-section">
+            <label class="checkbox-label">
+              <input 
+                type="checkbox" 
+                [checked]="acceptTerms()"
+                (change)="acceptTerms.set($any($event.target).checked)"
+              >
+              <span>J'accepte les <a href="#" class="terms-link">conditions générales de vente</a></span>
+            </label>
+          </div>
+
+          <!-- Bouton de validation -->
+          <button 
+            type="submit" 
+            class="btn-submit"
+            [disabled]="!checkoutForm.valid || !acceptTerms() || isProcessing()"
+          >
+            <span class="material-icons" *ngIf="!isProcessing()">lock</span>
+            <span *ngIf="!isProcessing()">Confirmer la commande</span>
+            <span *ngIf="isProcessing()">Traitement en cours...</span>
+          </button>
+
+          <!-- Sécurité -->
+          <div class="security-badges">
+            <div class="badge">
+              <span class="material-icons">verified_user</span>
+              <span>Paiement sécurisé</span>
+            </div>
+            <div class="badge">
+              <span class="material-icons">local_shipping</span>
+              <span>Livraison rapide</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

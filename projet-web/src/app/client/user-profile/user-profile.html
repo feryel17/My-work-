@@ -1,0 +1,237 @@
+<div class="user-profile-container">
+  <div class="profile-header">
+    <h1>Mon Profil</h1>
+    <p class="subtitle">Gérez vos informations personnelles</p>
+  </div>
+
+  <!-- Section Informations Personnelles -->
+  <div class="profile-section">
+    <div class="section-header">
+      <h2>Informations Personnelles</h2>
+      <button class="btn btn-edit" (click)="toggleEditMode()">
+        {{ isEditing ? 'Annuler' : 'Modifier' }}
+      </button>
+    </div>
+
+    <div *ngIf="!isEditing" class="info-display">
+      <div class="info-item">
+        <label>Prénom</label>
+        <p>{{ userData?.firstName || 'N/A' }}</p>
+      </div>
+      <div class="info-item">
+        <label>Nom</label>
+        <p>{{ userData?.lastName || 'N/A' }}</p>
+      </div>
+      <div class="info-item">
+        <label>Email</label>
+        <p>{{ userData?.email || 'N/A' }}</p>
+      </div>
+      <div class="info-item">
+        <label>Membre depuis</label>
+        <p>{{ userData?.createdAt | date:'d MMMM yyyy' }}</p>
+      </div>
+    </div>
+
+    <!-- Formulaire d'édition -->
+    <form *ngIf="isEditing" #editForm="ngForm" (ngSubmit)="saveProfile()">
+      <div class="form-group">
+        <label for="firstName">Prénom</label>
+        <input 
+          type="text" 
+          id="firstName" 
+          [(ngModel)]="editData.firstName"
+          name="firstName"
+          class="form-control"
+          required
+        >
+      </div>
+      <div class="form-group">
+        <label for="lastName">Nom</label>
+        <input 
+          type="text" 
+          id="lastName" 
+          [(ngModel)]="editData.lastName"
+          name="lastName"
+          class="form-control"
+          required
+        >
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary" [disabled]="isSaving || !editForm.valid">
+          {{ isSaving ? 'Enregistrement...' : 'Enregistrer' }}
+        </button>
+        <button type="button" class="btn btn-secondary" (click)="toggleEditMode()">
+          Annuler
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Section Adresse -->
+  <div class="profile-section">
+    <div class="section-header">
+      <h2>Adresse de Livraison</h2>
+      <button class="btn btn-edit" (click)="toggleAddressEdit()">
+        {{ isEditingAddress ? 'Annuler' : 'Modifier' }}
+      </button>
+    </div>
+
+    <div *ngIf="!isEditingAddress" class="info-display">
+      <div class="info-item">
+        <label>Adresse</label>
+        <p>{{ userData?.address || 'Aucune adresse enregistrée' }}</p>
+      </div>
+    </div>
+
+    <!-- Formulaire d'édition adresse -->
+    <form *ngIf="isEditingAddress" (ngSubmit)="saveAddress()">
+      <div class="form-group">
+        <label for="address">Adresse complète</label>
+        <textarea 
+          id="address" 
+          [(ngModel)]="editAddress"
+          name="address"
+          class="form-control"
+          rows="3"
+          placeholder="Entrez votre adresse complète (rue, ville, code postal, pays)"
+          required
+        ></textarea>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary" [disabled]="isSavingAddress">
+          {{ isSavingAddress ? 'Enregistrement...' : 'Enregistrer' }}
+        </button>
+        <button type="button" class="btn btn-secondary" (click)="toggleAddressEdit()">
+          Annuler
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Section Commandes -->
+  <div class="profile-section orders-section">
+    <div class="orders-header">
+      <h2>📦 Historique de mes Commandes</h2>
+      <button class="toggle-logs" (click)="toggleOrderLogs()">
+        {{ showOrderLogs ? '▼' : '▶' }}
+      </button>
+    </div>
+    <div *ngIf="showOrderLogs && orders && orders.length > 0" class="orders-list">
+      <div class="orders-list">
+        <div *ngFor="let order of orders" class="order-card">
+          <!-- En-tête de la commande -->
+          <div class="order-header">
+            <div class="order-info-left">
+              <span class="order-id">Commande #{{ order.id?.substring(0, 8).toUpperCase() }}</span>
+              <span class="order-date">{{ convertToDate(order.createdAt) | date:'d MMMM yyyy à HH:mm' }}</span>
+            </div>
+            <span class="order-status" [ngClass]="'status-' + order.status">
+              {{ getStatusLabel(order.status) }}
+            </span>
+          </div>
+
+          <!-- Liste des produits -->
+          <div class="order-products">
+            <h4>Articles commandés :</h4>
+            <div class="product-list">
+              <div *ngFor="let item of order.items" class="product-item">
+                <img [src]="item.productImage" [alt]="item.productName" class="product-img">
+                <div class="product-info">
+                  <p class="product-name">{{ item.productName }}</p>
+                  <p class="product-price">{{ item.price | number:'1.2-2' }} TND x {{ item.quantity }}</p>
+                </div>
+                <div class="product-subtotal">
+                  <strong>{{ item.price * item.quantity | number:'1.2-2' }} TND</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Adresse de livraison -->
+          <div class="order-shipping" *ngIf="order.shippingAddress">
+            <h4>📍 Adresse de livraison :</h4>
+            <p class="shipping-name">{{ order.shippingAddress.fullName }}</p>
+            <p class="shipping-address">{{ order.shippingAddress.address }}</p>
+            <p class="shipping-city">{{ order.shippingAddress.postalCode }} {{ order.shippingAddress.city }}</p>
+            <p class="shipping-phone">📞 {{ order.shippingAddress.phone }}</p>
+          </div>
+
+          <!-- Pied de la commande -->
+          <div class="order-footer">
+            <div class="payment-method">
+              <span>💳 Paiement : {{ order.paymentMethod }}</span>
+            </div>
+            <div class="order-total-section">
+              <span class="total-label">Total :</span>
+              <span class="total-amount">{{ order.totalAmount | number:'1.2-2' }} TND</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div *ngIf="!showOrderLogs" class="empty-state-collapsed">
+      <p class="empty-icon">📋</p>
+      <p class="empty-text">Afficher mes commandes</p>
+    </div>
+    <div *ngIf="showOrderLogs && orders && orders.length === 0" class="empty-state-box">
+      <p class="empty-icon">🛍️</p>
+      <p class="empty-text">Aucune commande pour le moment</p>
+      <p class="empty-subtext">Commencez vos achats dès maintenant !</p>
+      <button class="btn btn-primary" routerLink="/products">Voir les produits</button>
+    </div>
+  </div>
+
+  <!-- Section Sécurité -->
+  <div class="profile-section security-section">
+    <h2>Sécurité</h2>
+    
+    <!-- Bouton pour afficher le formulaire -->
+    <button type="button" class="btn btn-secondary" (click)="togglePasswordForm()" *ngIf="!showPasswordForm">
+      🔐 Changer le Mot de Passe
+    </button>
+
+    <!-- Formulaire de changement de mot de passe (caché par défaut) -->
+    <div *ngIf="showPasswordForm" class="password-change-section">
+      <h3>🔐 Changer le Mot de Passe</h3>
+      <div class="password-form">
+        <div class="form-group">
+          <label for="newPassword">Nouveau Mot de Passe</label>
+          <input 
+            type="password" 
+            id="newPassword"
+            [(ngModel)]="newPassword" 
+            name="newPassword"
+            placeholder="Entrez le nouveau mot de passe"
+            class="form-control"
+          />
+        </div>
+        <div class="form-group">
+          <label for="confirmPassword">Confirmer le Mot de Passe</label>
+          <input 
+            type="password" 
+            id="confirmPassword"
+            [(ngModel)]="confirmPassword" 
+            name="confirmPassword"
+            placeholder="Confirmez le mot de passe"
+            class="form-control"
+          />
+        </div>
+        <div class="password-buttons">
+          <button type="button" class="btn btn-primary" (click)="updatePassword()" [disabled]="!newPassword || !confirmPassword">
+            Mettre à Jour le Mot de Passe
+          </button>
+          <button type="button" class="btn btn-secondary" (click)="togglePasswordForm()">
+            Annuler
+          </button>
+        </div>
+        <div *ngIf="passwordMessage" [ngClass]="{'success': passwordSuccess, 'error': !passwordSuccess}" class="password-message">
+          {{ passwordMessage }}
+        </div>
+      </div>
+    </div>
+    
+    <button type="button" class="btn btn-danger" (click)="logout()">
+      Déconnexion
+    </button>
+  </div>
+</div>

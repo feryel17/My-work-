@@ -1,0 +1,169 @@
+<div class="login-page">
+  <!-- En-tête -->
+  <div class="page-header">
+    <div class="container">
+      <h1 class="page-title">Connexion</h1>
+      <div class="breadcrumb">
+        <a routerLink="/">Accueil</a>
+        <i class="material-icons">chevron_right</i>
+        <span>Connexion</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="container login-content">
+    <div class="row justify-content-center">
+      <div class="col-md-8 col-lg-6">
+        <!-- Carte de connexion -->
+        <div class="login-card">
+          <!-- En-tête -->
+          <div class="login-header">
+            <h2>Bienvenue</h2>
+            <p>Connectez-vous à votre compte</p>
+          </div>
+
+          <!-- Messages d'erreur -->
+          @if (errorMessage()) {
+            <div class="alert alert-danger">
+              <i class="material-icons">error</i>
+              {{errorMessage()}}
+            </div>
+          }
+
+          <!-- Formulaire -->
+          <form (ngSubmit)="onSubmit()" #loginForm="ngForm">
+            <!-- Email -->
+            <div class="form-group">
+              <label for="email" class="form-label">
+                <i class="material-icons">email</i>
+                Adresse email
+              </label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                class="form-control"
+                [(ngModel)]="loginData().email"
+                placeholder="votre@email.com"
+                required
+                [disabled]="isLoading()"
+              />
+            </div>
+
+            <!-- Mot de passe -->
+            <div class="form-group">
+              <div class="password-header">
+                <label for="password" class="form-label">
+                  <i class="material-icons">lock</i>
+                  Mot de passe
+                </label>
+                <a href="javascript:void(0)" class="forgot-link" (click)="resetPassword()">
+                  Mot de passe oublié ?
+                </a>
+              </div>
+              
+              <div class="password-input">
+                <input
+                  [type]="showPassword() ? 'text' : 'password'"
+                  id="password"
+                  name="password"
+                  class="form-control"
+                  [(ngModel)]="loginData().password"
+                  placeholder="Votre mot de passe"
+                  required
+                  [disabled]="isLoading()"
+                />
+                <button 
+                  type="button" 
+                  class="toggle-password"
+                  (click)="togglePassword()"
+                  [disabled]="isLoading()"
+                >
+                  <i class="material-icons">
+                    {{showPassword() ? 'visibility_off' : 'visibility'}}
+                  </i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Options -->
+            <div class="form-options">
+              <div class="form-check">
+                <input
+                  type="checkbox"
+                  id="rememberMe"
+                  name="rememberMe"
+                  class="form-check-input"
+                  [(ngModel)]="loginData().rememberMe"
+                  [disabled]="isLoading()"
+                />
+                <label for="rememberMe" class="form-check-label">
+                  Se souvenir de moi
+                </label>
+              </div>
+            </div>
+
+            <!-- Bouton de connexion -->
+            <button 
+              type="submit" 
+              class="login-btn primary-btn"
+              [disabled]="isLoading() || !loginForm.form.valid"
+            >
+              @if (isLoading()) {
+                <span class="spinner"></span>
+              } @else {
+                <i class="material-icons">login</i>
+              }
+              Se connecter
+            </button>
+
+            <!-- Séparateur -->
+            <div class="separator">
+              <span>ou</span>
+            </div>
+
+            <!-- Connexion rapide (démo) -->
+            <div class="demo-login">
+              <p class="demo-title">Connexion de démonstration:</p>
+              <div class="demo-buttons">
+                <button type="button" class="demo-btn admin-btn" (click)="quickLogin('admin')">
+                  <i class="material-icons">admin_panel_settings</i>
+                  Admin
+                </button>
+                <button type="button" class="demo-btn user-btn" (click)="quickLogin('user')">
+                  <i class="material-icons">person</i>
+                  Client
+                </button>
+              </div>
+            </div>
+
+            <!-- Inscription -->
+            <div class="register-link">
+              <p>
+                Nouveau client ?
+                <a routerLink="/register" class="register-cta">
+                  Créez votre compte
+                </a>
+              </p>
+            </div>
+          </form>
+        </div>
+
+        <!-- Informations supplémentaires -->
+        <div class="login-info">
+          <div class="info-card">
+            <i class="material-icons">verified_user</i>
+            <h4>Paiement sécurisé</h4>
+            <p>Vos données sont cryptées et protégées</p>
+          </div>
+          
+          <div class="info-card">
+            <i class="material-icons">support_agent</i>
+            <h4>Service client</h4>
+            <p>Assistance 7j/7 par chat et email</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

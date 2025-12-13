@@ -1,0 +1,85 @@
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-content">
+      
+      <!-- Colonne 1 : À propos -->
+      <div class="footer-column">
+        <h3 class="footer-title">
+          <span class="material-icons">spa</span>
+          MakeupStore
+        </h3>
+        <p class="footer-description">
+          Votre destination pour le maquillage de qualité. 
+          Des produits sélectionnés avec soin pour révéler votre beauté.
+        </p>
+        <div class="social-links">
+          <a href="#" class="social-link">
+            <span class="material-icons">facebook</span>
+          </a>
+          <a href="#" class="social-link">
+            <span class="material-icons">photo_camera</span>
+          </a>
+          <a href="#" class="social-link">
+            <span class="material-icons">play_circle</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Colonne 2 : Liens rapides -->
+      <div class="footer-column">
+        <h4 class="column-title">Navigation</h4>
+        <ul class="footer-links">
+          <li><a routerLink="/">Accueil</a></li>
+          <li><a routerLink="/products">Produits</a></li>
+          <li><a routerLink="/products" [queryParams]="{sort: 'new'}">Nouveautés</a></li>
+          <li><a routerLink="/products" [queryParams]="{sort: 'promo'}">Promotions</a></li>
+        </ul>
+      </div>
+
+      <!-- Colonne 3 : Service client -->
+      <div class="footer-column">
+        <h4 class="column-title">Service client</h4>
+        <ul class="footer-links">
+          <li><a href="#">Contactez-nous</a></li>
+          <li><a href="#">Livraison & Retours</a></li>
+          <li><a href="#">FAQ</a></li>
+          <li><a href="#">Mentions légales</a></li>
+        </ul>
+      </div>
+
+      <!-- Colonne 4 : Newsletter -->
+      <div class="footer-column">
+        <h4 class="column-title">Newsletter</h4>
+        <p class="newsletter-text">
+          Inscrivez-vous pour recevoir nos offres exclusives
+        </p>
+        <div class="newsletter-form">
+          <input type="email" placeholder="Votre email" class="newsletter-input">
+          <button class="newsletter-btn">
+            <span class="material-icons">send</span>
+          </button>
+        </div>
+        <div class="payment-methods">
+          <p class="payment-text">Paiement sécurisé</p>
+          <div class="payment-icons">
+            <span class="material-icons">credit_card</span>
+            <span class="material-icons">phone_iphone</span>
+            <span class="material-icons">account_balance</span>
+            <span class="material-icons">lock</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Copyright -->
+    <div class="footer-bottom">
+      <p class="copyright">
+        © 2026 MakeupStore Tunisie. Tous droits réservés.
+      </p>
+      <p class="location">
+        <span class="material-icons">location_on</span>
+        Tunis, Tunisie
+      </p>
+    </div>
+  </div>
+</footer>

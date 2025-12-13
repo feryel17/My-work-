@@ -1,0 +1,12 @@
+<div class="app-container">
+  <!-- Header (masqué pour les pages admin) -->
+  <app-header *ngIf="!isAdminRoute()"></app-header>
+  
+  <!-- Contenu principal -->
+  <main class="main-content">
+    <router-outlet></router-outlet>
+  </main>
+  
+  <!-- Footer (masqué pour les pages admin) -->
+  <app-footer *ngIf="!isAdminRoute()"></app-footer>
+</div>

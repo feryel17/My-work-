@@ -1,0 +1,198 @@
+<div class="product-detail-page">
+  <!-- Loading state -->
+  @if (isLoading()) {
+    <div class="loading-container">
+      <div class="spinner"></div>
+      <p>Chargement du produit...</p>
+    </div>
+  } @else if (!product()) {
+    <div class="not-found">
+      <i class="material-icons">search_off</i>
+      <h2>Produit non trouvé</h2>
+      <p>Le produit que vous recherchez n'existe pas.</p>
+      <button class="primary-btn" routerLink="/products">
+        <i class="material-icons">arrow_back</i>
+        Retour aux produits
+      </button>
+    </div>
+  } @else {
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+      <div class="container">
+        <a routerLink="/">Accueil</a>
+        <i class="material-icons">chevron_right</i>
+        <a routerLink="/products">Produits</a>
+        <i class="material-icons">chevron_right</i>
+        <span>{{product()?.name}}</span>
+      </div>
+    </div>
+
+    <!-- Produit principal -->
+    <div class="container product-main">
+      <div class="product-content">
+        <!-- Galerie d'images -->
+        <div class="product-gallery">
+          <!-- Image principale -->
+          <div class="main-image">
+            <img 
+              [src]="getProductImage(product()!, selectedImageIndex())" 
+              [alt]="product()?.name"
+              class="product-main-img"
+            />
+          </div>
+          
+          <!-- Miniatures -->
+          @if (product()?.images && product()!.images.length > 1) {
+            <div class="thumbnails">
+              @for (image of product()!.images; track $index; let i = $index) {
+                <button 
+                  class="thumbnail-btn" 
+                  [class.active]="selectedImageIndex() === i"
+                  (click)="selectImage(i)"
+                >
+                  <img [src]="image" [alt]="'Miniature ' + (i + 1)" />
+                </button>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Informations produit -->
+        <div class="product-info">
+          <!-- En-tête -->
+          <div class="product-header">
+            <div class="product-meta">
+              <span class="product-brand">{{product()?.brand}}</span>
+              <span class="product-category">{{getCategoryName(product()!.category)}}</span>
+            </div>
+            
+            <h1 class="product-title">{{product()?.name}}</h1>
+            
+            <!-- Rating -->
+            @if (product()?.rating) {
+              <div class="product-rating">
+                @for (star of [1,2,3,4,5]; track star) {
+                  <i class="material-icons" [class.filled]="star <= product()!.rating!">
+                    {{star <= product()!.rating! ? 'star' : 'star_border'}}
+                  </i>
+                }
+                <span class="rating-text">(Note: {{product()?.rating}}/5)</span>
+              </div>
+            }
+          </div>
+
+          <!-- Prix -->
+          <div class="product-pricing">
+            <div class="price-container">
+              <span class="current-price">{{product()?.price | currency:'TND'}}</span>
+              @if (product()?.oldPrice) {
+                <span class="old-price">{{product()!.oldPrice | currency:'TND'}}</span>
+              }
+            </div>
+            
+            <!-- Disponibilité -->
+            <div class="availability">
+              <i class="material-icons" [class.in-stock]="product()!.stock > 0" 
+                 [class.out-of-stock]="product()!.stock === 0">
+                {{product()!.stock > 0 ? 'check_circle' : 'cancel'}}
+              </i>
+              <span>
+                {{product()!.stock > 0 ? 'En stock' : 'Rupture de stock'}}
+                @if (product()!.stock > 0) {
+                  <strong> ({{product()!.stock}} disponible(s))</strong>
+                }
+              </span>
+            </div>
+          </div>
+
+          <!-- Description -->
+          <div class="product-description">
+            <h3>Description</h3>
+            <p>{{product()?.description}}</p>
+          </div>
+
+          <!-- Options -->
+          <div class="product-options">
+            <!-- Quantité -->
+            <div class="quantity-selector">
+              <label>Quantité</label>
+              <div class="quantity-controls">
+                <button class="qty-btn" (click)="decreaseQuantity()" [disabled]="quantity() <= 1">
+                  <i class="material-icons">remove</i>
+                </button>
+                <input type="number" class="qty-input" [value]="quantity()" readonly />
+                <button class="qty-btn" (click)="increaseQuantity()" 
+                        [disabled]="quantity() >= product()!.stock">
+                  <i class="material-icons">add</i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Boutons d'action -->
+            <div class="action-buttons">
+              <button class="add-to-cart-btn primary-btn" (click)="addToCart()"
+                      [disabled]="product()!.stock === 0">
+                <i class="material-icons">add_shopping_cart</i>
+                {{product()!.stock === 0 ? 'Rupture' : 'Ajouter au panier'}}
+              </button>
+              
+              <button class="wishlist-btn secondary-btn">
+                <i class="material-icons">favorite_border</i>
+                Ajouter à la liste de souhaits
+              </button>
+            </div>
+          </div>
+
+          <!-- Informations supplémentaires -->
+          <div class="additional-info">
+            <div class="info-item">
+              <i class="material-icons">local_shipping</i>
+              <div>
+                <strong>Livraison gratuite</strong>
+                <p>Dès 50 DT d'achat</p>
+              </div>
+            </div>
+            
+            <div class="info-item">
+              <i class="material-icons">assignment_return</i>
+              <div>
+                <strong>Retours gratuits</strong>
+                <p>30 jours pour changer d'avis</p>
+              </div>
+            </div>
+            
+            <div class="info-item">
+              <i class="material-icons">support_agent</i>
+              <div>
+                <strong>Service client</strong>
+                <p>Disponible 7j/7</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Produits similaires -->
+    @if (relatedProducts().length > 0) {
+      <div class="related-products">
+        <div class="container">
+          <h2 class="section-title">Produits similaires</h2>
+          <div class="related-grid">
+            @for (relatedProduct of relatedProducts(); track relatedProduct.id) {
+              <div class="related-card">
+                <a [routerLink]="['/product', relatedProduct.id]" class="related-link">
+                  <img [src]="getProductImage(relatedProduct)" [alt]="relatedProduct.name" />
+                  <div class="related-info">
+                    <h3>{{relatedProduct.name}}</h3>
+                    <p class="related-price">{{relatedProduct.price | currency:'TND'}}</p>
+                  </div>
+                </a>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    }
+  }
+</div>
